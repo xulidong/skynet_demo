@@ -1,0 +1,33 @@
+-- 非配置项，单纯的定义一个了根目录变量，方便后面目录的配置和修改
+root="./"
+
+-- 必须配置，skynet 启动的第一个服务以及其启动参数
+bootstrap = "snlua bootstrap"
+
+-- 必须配置，工作线程数，不要多余 cpu 核数
+thread = 1
+
+-- 必须配置，用 C 编写的服务模块的位置
+cpath = root.."cservice/?.so"
+
+-- skynet_error的输出文件，默认为nil表示标准输出
+logger = "../game/log/game.log"
+
+-- 当你运行时为一个服务打开 log 时，这个服务所有的输入消息都会被记录在这个目录下，文件名为服务地址
+logpath = "../game/log"
+
+-- 0表示单节点模式，1-255 间的任意整数表示多节点模式
+harbor = 0
+
+-- lua 服务脚本所在的位置
+luaservice = root.."service/?.lua;"..root.."../game/script/?.lua"
+
+-- 添加lua 脚本所在的位置，供 require 调用
+lua_path = root.."lualib/?.lua;"..root.."lualib/?/init.lua;"..root.."../game/script/?.lua"
+
+-- 添加 c 编写的模块所在的位置，供 require 调用
+lua_cpath = root.."luaclib/?.so;"..root.."../game/luaclib/?.so"
+
+-- 启动脚本，必须在luaservice指定的路径中，默认为 main.lua
+start = "main"
+
