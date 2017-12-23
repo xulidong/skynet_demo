@@ -6,9 +6,10 @@ local const = {}
 
 -- 服务器类型
 const.service_type = {
-    GATE = 1, -- 网关服务
-    DB = 2, -- 数据库服
-    GAME = 3, -- 游戏服
+    CENTER = 1, -- 中心服
+    GATE = 2, -- 网关服
+    DB = 3, -- 数据库服
+    GAME = 4, -- 游戏服
 }
 
 return const

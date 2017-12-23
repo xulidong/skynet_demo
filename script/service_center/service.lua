@@ -3,39 +3,32 @@
 --- 记录所有服务地址
 ---
 
-local skynet = require "skynet"
+local oo = require "utils.oo"
+local const = require "const"
+local ServiceBase = require "service_base"
 
-local service = {
-    service_dict = {},-- 服务列表: {type: {name: {type:, name, addr:}}}
-}
+local ServiceCenter = oo.class('ServiceCenter',  ServiceBase)
 
-function service.register_service(self, type, name, addr)
-    local services = self.service_dict[type]
+function ServiceCenter.register_service(self, type, name, addr)
+    local services = self.service_map[type]
     if not services then
-		services = {}
-		self.service_dict[type] = services
-	end
+        services = {}
+        self.service_map[type] = services
+    end
     if not services[name] then
-		services[name] = {
+        services[name] = {
             type = type,
-			name = name,
-			addr = addr,
-		}
-	else
-		error(string.format("error service_center.register_service: service %s is always exist", name))
-	end
+            name = name,
+            addr = addr,
+        }
+    else
+        error(string.format("error service_center.register_service: service %s is always exist", name))
+    end
 end
 
-skynet.start(function ()
-    -- 注册服务rpc函数
-    skynet.dispatch("lua", function (session, address, cmd, ...)
-        local fun = service[cmd];
-        if fun then
-            local ret = fun(service, ...);
-            local data, size = skynet.pack(ret);
-            skynet.ret(data, size)
-        else
-            error(string.format("error service_center.start: unknown command %s", cmd))
-        end
-    end)
-end)
+function ServiceCenter.all_service_start_done(self)
+    self:_sync_service_map()
+end
+
+local service_center = ServiceCenter(const.service_type.CENTER, name);
+service_center:start();

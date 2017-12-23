@@ -3,6 +3,10 @@
 ---
 
 local oo = {}
+
+local setmetatable = setmetatable
+local rawget = rawget
+
 oo._class_metatable = nil
 
 function oo.class(classname, super)

@@ -7,7 +7,7 @@ local service_conf = require "service_conf"
 
 skynet.start(function()
     -- 中心服
-    skynet.uniqueservice("service_center/service")
+    local center = skynet.uniqueservice("service_center/service", service_conf.center_name)
 
     -- 数据库服
     local db_list = service_conf.db_list
@@ -27,5 +27,6 @@ skynet.start(function()
         skynet.newservice("service_gate/service", gate)
     end
 
+    skynet.call(center, "lua", "all_service_start_done");
     skynet.exit()
 end)
