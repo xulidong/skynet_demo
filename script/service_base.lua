@@ -20,18 +20,13 @@ function ServiceBase._init(self, type, name)
     self.service_map = {}
 end
 
--- 中心服方法，同步service给其他服务
-function ServiceBase._sync_service_map(self)
-    for _, services in pairs(self.service_map) do
-        for _, svc in pairs(services) do
-            skynet.call(svc.addr, "lua", "on_sync_service_map", self.service_map)
-        end
-    end
-end
-
 -- 非中心服方法，接收中心服同步的service_map
 function ServiceBase.on_sync_service_map(self, service_map)
-    self.service_map = service_map;
+    if service_map then
+        self.service_map = service_map
+    else
+        error(string.format("error %s.get_service_addr: service_map %s", self.name, service_map))
+    end
 end
 
 -- 非中心服方法，向中心服注册
@@ -47,14 +42,18 @@ function ServiceBase.get_service_addr(self, type, name)
         local conf = services[name]
         if conf then
             return conf.addr
+        else
+            error(string.format("error %s.get_service_addr: unknown name %s, %s", self.name, type, name))
         end
+    else
+        error(string.format("error %s.get_service_addr: unknown type %s, %s", self.name, type, name))
     end
 end
 
 -- 注册服务间回调
 function ServiceBase.register_rpc(self)
     skynet.dispatch("lua", function (session, address, cmd, ...)
-       local fun = self[cmd];
+        local fun = self[cmd];
         if fun then
             local ret = fun(self, ...);
             local data, size = skynet.pack(ret);

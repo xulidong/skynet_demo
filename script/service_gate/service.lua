@@ -15,14 +15,15 @@ local ServiceGate = oo.class('ServiceGate',  ServiceBase)
 
 function ServiceGate._init(self, type, name)
     ServiceBase._init(self, type, name)
-
     self.client_addr = {} -- {id: addr}
+    self.key_accounts = {} -- {acckey: account}
     self.db = nil -- 数据库
+    self.conf = nil -- service_conf中的服务配置
 end
 
 
 function ServiceGate.on_connect (self, id, addr)
-    self.client_addr[id] = Account(id, addr);
+    self.client_addr[id] = Account(id, addr, self);
 end
 
 function ServiceGate.on_disconnect (self, id, addr)
@@ -59,23 +60,43 @@ function ServiceGate.accept(self, id, addr)
     self:on_data(id, addr)
 end
 
+function ServiceGate.on_sync_service_map(self, service_map)
+    ServiceBase.on_sync_service_map(self, service_map)
+
+    -- 数据库
+    assert(self.conf.db ~= nil)
+    self.db = self:get_service_addr(const.service_type.DB, self.conf.db)
+end
+
 
 function ServiceGate.on_start(self)
     ServiceBase.on_start(self)
 
     -- 读取配置
     local gate_list = service_conf.gate_list
-    local conf = gate_list[self.name]
-
-    -- 数据库
-    assert(conf.db ~= nil)
-    self.db = self:get_service_addr(const.service_type.DB, conf.db)
+    self.conf = gate_list[self.name]
 
     -- 监听 socket 连接
-    local listen_id = assert(socket.listen(conf.host, conf.port))
+    local listen_id = assert(socket.listen(self.conf.host, self.conf.port))
     socket.start(listen_id , function(id, addr)
         self:accept(id, addr);
     end)
+end
+
+---center请求：踢掉帐号
+--@param acckey 帐号key
+function ServiceGate.kick_account(self, acckey)
+	local account = self.key_accounts[acckey]
+	account:on_kicked()
+end
+
+---帐号登陆成功
+--@param account 帐号类
+function ServiceGate.on_account_logined(self, account)
+	if self.key_accounts[account.acckey] then
+		error("on_account_login, account is always logined: %s", account.acckey)
+	end
+	self.key_accounts[account.acckey] = account
 end
 
 local name = ...
