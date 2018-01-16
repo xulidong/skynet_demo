@@ -23,7 +23,7 @@ harbor = 0
 luaservice = root.."service/?.lua;"..root.."../game/script/?.lua"
 
 -- 添加lua 脚本所在的位置，供 require 调用
-lua_path = root.."lualib/?.lua;"..root.."lualib/?/init.lua;"..root.."../game/script/?.lua"
+lua_path = root.."lualib/?.lua;"..root.."lualib/?/init.lua;"..root.."../game/script/?.lua;"..root.."../game/lualib/?.lua"
 
 -- 添加 c 编写的模块所在的位置，供 require 调用
 lua_cpath = root.."luaclib/?.so;"..root.."../game/luaclib/?.so"

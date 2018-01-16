@@ -2,7 +2,6 @@
 --- 客户端链接对象
 ---
 local skynet = require "skynet"
-local socket = require "skynet.socket"
 local cjson = require "cjson"
 local const = require "const"
 local oo = require "utils.oo"
@@ -12,9 +11,8 @@ local service_conf = require "service_conf"
 
 local Account = oo.class("Account")
 
-function Account._init(self, id, addr, gate)
-    self.id = id;-- socket的id
-    self.addr = addr; -- 客户端地址
+function Account._init(self, ws, gate)
+    self.ws = ws; -- 客户端的websocket
     self.gate = gate; -- 账号所在gate
     self.username = ""; -- 角色名字
     self.acckey = ""; -- 账号名字[服务器id+角色名字]
@@ -52,7 +50,7 @@ function Account._do_login(self, acckey)
     if ret == const.account_status.UNLOGIN then
         self:_load_from_db()
         self.gate:on_account_logined(self)
-        socket.write(self.id, cjson.encode({sc.LOGIN_RES, 0}))
+        self.ws:send_text(cjson.encode({sc.LOGIN_RES, 0}))
         skynet.call(self.gate.center, 'lua', 'account_logined', self.acckey)
         self.status = const.account_status.LOGINED
         self:_send_actor_summary()
@@ -75,7 +73,7 @@ Account[cs.LOGIN] = function(self, mid, username)
     if self.status == const.account_status.UNLOGIN then
         self:_do_login(acckey)
     else
-        socket.write(self.id, cjson.encode({sc.LOGIN_RES, 1}))
+        self.ws:send_text(cjson.encode({sc.LOGIN_RES, 1}))
 	end
 end
 
