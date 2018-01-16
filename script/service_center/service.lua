@@ -34,8 +34,15 @@ function ServiceCenter.register_service(self, type, name, addr)
     end
 end
 
---- 同步service给其他服务
+--- 所有服都启动完成后，回调用这个方法
 function ServiceCenter.all_service_start_done(self)
+    self:_sync_service_map()
+    self:_notify_start_done()
+    self.starting = false
+end
+
+--- 同步service给其他服务
+function ServiceCenter._sync_service_map(self)
     for type, services in pairs(self.service_map) do
         if type ~= const.service_type.CENTER then
             for name, service in pairs(services) do
@@ -44,6 +51,16 @@ function ServiceCenter.all_service_start_done(self)
         end
     end
 end
+
+--- 通知其他服启动完成
+function ServiceCenter._notify_start_done(self)
+    for type, services in pairs(self.service_map) do
+        for name, service in pairs(services) do
+            skynet.call(service.addr, 'lua', 'on_notify_start_done', self.service_map)
+        end
+    end
+end
+
 
 ---帐号通知：账号登陆
 --@param gate_addr gate地址

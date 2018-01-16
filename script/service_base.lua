@@ -18,6 +18,8 @@ function ServiceBase._init(self, type, name)
     -- 服务列表: {type: {name: {type:, name, addr:}}}
     -- 中心服会接收其他服注册信息，等各个服务启动完成之后，会将此数据同步给其他服务
     self.service_map = {}
+    -- 服务启动中，等待中心服通知启动完成
+    self.starting = false
 end
 
 -- 非中心服方法，接收中心服同步的service_map
@@ -27,6 +29,11 @@ function ServiceBase.on_sync_service_map(self, service_map)
     else
         error(string.format("error %s.get_service_addr: service_map %s", self.name, service_map))
     end
+end
+
+-- 非中心服方法，所有服务启动完成
+function ServiceBase.on_notify_start_done(self, service_map)
+    self.starting = false
 end
 
 -- 非中心服方法，向中心服注册
